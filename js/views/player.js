@@ -1,16 +1,30 @@
 "use strict";
 
 import { loadConfig, loadSeason } from "../api.js";
+import { GIST_ID } from "../config.js";
 import { computeStats, setPct, gamePct } from "../ranking.js";
 import { formatScore, playerName, countryFlag } from "../utils.js";
 
-const JSONBIN_BASE = "https://api.jsonbin.io/v3";
+function seasonFileName(seasonId) {
+  return `season_${seasonId}.json`;
+}
 
-async function fetchBin(binId) {
-  const res = await fetch(`${JSONBIN_BASE}/b/${binId}/latest`);
-  if (!res.ok) throw new Error(`Failed to fetch bin ${binId}`);
-  const json = await res.json();
-  return json.record;
+let cachedGistData = null;
+
+async function getGistData() {
+  if (cachedGistData) return cachedGistData;
+  const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+    headers: { Accept: "application/vnd.github.v3+json" },
+  });
+  if (!res.ok) throw new Error("Failed to fetch gist");
+  cachedGistData = await res.json();
+  return cachedGistData;
+}
+
+function parseSeasonFromGist(gist, seasonId) {
+  const file = gist.files[seasonFileName(seasonId)];
+  if (!file) return null;
+  return JSON.parse(file.content);
 }
 
 function pct(val) {
@@ -44,17 +58,20 @@ async function render(params) {
   let playerNameStr = null;
   let playerCountryCode = "";
 
+  const gist = await getGistData();
+
   for (const season of config.seasons) {
     let seasonData;
     try {
       if (season.id === config.active_season) {
         seasonData = await loadSeason();
       } else {
-        seasonData = await fetchBin(season.bin_id);
+        seasonData = parseSeasonFromGist(gist, season.id);
       }
     } catch {
       continue;
     }
+    if (!seasonData) continue;
 
     const player = seasonData.players.find((p) => p.id === playerId);
     if (!player) continue;

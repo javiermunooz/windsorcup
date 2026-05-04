@@ -1,20 +1,11 @@
 "use strict";
 
-const MATCH_BLOB_KEY = "wc_match_blob";
-const ADMIN_BLOB_KEY = "wc_admin_blob";
+import { MATCH_ENCRYPTED_BLOB, ADMIN_ENCRYPTED_BLOB } from "./config.js";
 
 const ACCESS_LEVEL = { NONE: 0, PLAYER: 1, ADMIN: 2 };
 
 let currentApiKey = null;
 let currentAccess = ACCESS_LEVEL.NONE;
-
-function getStoredBlob(key) {
-  return localStorage.getItem(key);
-}
-
-function setStoredBlob(key, blob) {
-  localStorage.setItem(key, blob);
-}
 
 async function deriveKey(passphrase, salt) {
   const enc = new TextEncoder();
@@ -67,12 +58,9 @@ async function decrypt(blob, passphrase) {
 }
 
 async function authenticate(passphrase) {
-  const matchBlob = getStoredBlob(MATCH_BLOB_KEY);
-  const adminBlob = getStoredBlob(ADMIN_BLOB_KEY);
-
-  if (adminBlob) {
+  if (ADMIN_ENCRYPTED_BLOB) {
     try {
-      currentApiKey = await decrypt(adminBlob, passphrase);
+      currentApiKey = await decrypt(ADMIN_ENCRYPTED_BLOB, passphrase);
       currentAccess = ACCESS_LEVEL.ADMIN;
       return ACCESS_LEVEL.ADMIN;
     } catch (_) {
@@ -80,9 +68,9 @@ async function authenticate(passphrase) {
     }
   }
 
-  if (matchBlob) {
+  if (MATCH_ENCRYPTED_BLOB) {
     try {
-      currentApiKey = await decrypt(matchBlob, passphrase);
+      currentApiKey = await decrypt(MATCH_ENCRYPTED_BLOB, passphrase);
       currentAccess = ACCESS_LEVEL.PLAYER;
       return ACCESS_LEVEL.PLAYER;
     } catch (_) {
@@ -108,10 +96,6 @@ function logout() {
   currentAccess = ACCESS_LEVEL.NONE;
 }
 
-function isSetup() {
-  return !!getStoredBlob(MATCH_BLOB_KEY) && !!getStoredBlob(ADMIN_BLOB_KEY);
-}
-
 export {
   encrypt,
   decrypt,
@@ -119,10 +103,5 @@ export {
   getApiKey,
   getAccessLevel,
   logout,
-  isSetup,
-  setStoredBlob,
-  getStoredBlob,
   ACCESS_LEVEL,
-  MATCH_BLOB_KEY,
-  ADMIN_BLOB_KEY,
 };

@@ -1,0 +1,7 @@
+"use strict";
+
+const GIST_ID = "";
+const MATCH_ENCRYPTED_BLOB = "";
+const ADMIN_ENCRYPTED_BLOB = "";
+
+export { GIST_ID, MATCH_ENCRYPTED_BLOB, ADMIN_ENCRYPTED_BLOB };

@@ -5,7 +5,7 @@ import {
   loadSeason,
   saveSeasonData,
   saveConfigData,
-  createBin,
+  createSeasonFile,
   invalidateCache,
 } from "../api.js";
 import {
@@ -266,10 +266,10 @@ async function handleCreateSeason(e) {
 
   try {
     const apiKey = getApiKey();
-    const binId = await createBin(seasonData, apiKey, `Windsor Cup - ${name}`);
+    await createSeasonFile(seasonId, seasonData, apiKey);
 
     const config = await loadConfig(true);
-    config.seasons.push({ id: seasonId, name, bin_id: binId, status: "in_progress" });
+    config.seasons.push({ id: seasonId, name, status: "in_progress" });
     config.active_season = seasonId;
     await saveConfigData(config, apiKey);
 
