@@ -90,6 +90,15 @@ function chevronSvg() {
   return `<svg class="accordion__chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>`;
 }
 
+function noSeasonHtml() {
+  return `
+    <div class="gate">
+      <div class="gate__icon">${lockSvg()}</div>
+      <h2>No Active Season</h2>
+      <p class="text-secondary">Go to <a href="#admin" class="player-link text-primary">Admin</a> to create a season.</p>
+    </div>`;
+}
+
 function lockSvg() {
   return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`;
 }
@@ -104,6 +113,7 @@ export {
   countryFlag,
   playerNameWithFlag,
   generateRoundRobin,
+  noSeasonHtml,
   chevronSvg,
   lockSvg,
 };

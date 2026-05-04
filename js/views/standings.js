@@ -2,7 +2,7 @@
 
 import { loadSeason } from "../api.js";
 import { rankPlayers } from "../ranking.js";
-import { countryFlag } from "../utils.js";
+import { countryFlag, noSeasonHtml } from "../utils.js";
 
 function rankClass(rank) {
   if (rank === 1) return "rank--1";
@@ -15,7 +15,8 @@ function pctDisplay(val) {
 }
 
 async function render() {
-  const data = await loadSeason();
+  let data;
+  try { data = await loadSeason(); } catch { return noSeasonHtml(); }
   const ranked = rankPlayers(data.players, data.matches);
   const totalMatches = data.schedule.reduce((sum, r) => sum + r.pairings.length, 0);
   const playedMatches = data.matches.length;

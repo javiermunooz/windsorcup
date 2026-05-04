@@ -1,7 +1,7 @@
 "use strict";
 
 import { loadSeason } from "../api.js";
-import { countryFlag } from "../utils.js";
+import { countryFlag, noSeasonHtml } from "../utils.js";
 
 function findMatch(matches, p1, p2) {
   return matches.find(
@@ -18,7 +18,8 @@ function cellContent(match, rowPlayerId) {
 }
 
 async function render() {
-  const data = await loadSeason();
+  let data;
+  try { data = await loadSeason(); } catch { return noSeasonHtml(); }
   const { players, matches } = data;
 
   const headerCells = players

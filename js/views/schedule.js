@@ -2,7 +2,7 @@
 
 import { loadSeason, saveSeasonData } from "../api.js";
 import { authenticate, getApiKey, getAccessLevel, ACCESS_LEVEL } from "../auth.js";
-import { formatScore, playerName, playerNameWithFlag, chevronSvg, showToast, lockSvg } from "../utils.js";
+import { formatScore, playerName, playerNameWithFlag, chevronSvg, showToast, lockSvg, noSeasonHtml } from "../utils.js";
 import { forceRefresh } from "../router.js";
 
 function findMatchResult(matches, matchId) {
@@ -159,7 +159,8 @@ function determineWinner(score) {
 }
 
 async function render() {
-  const data = await loadSeason();
+  let data;
+  try { data = await loadSeason(); } catch { return noSeasonHtml(); }
   const currentRound = getCurrentRound(data.schedule, data.matches);
   const totalMatches = data.schedule.reduce((sum, r) => sum + r.pairings.length, 0);
   const playedMatches = data.matches.length;
