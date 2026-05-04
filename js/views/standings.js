@@ -51,8 +51,8 @@ async function render() {
               <th class="num">P</th>
               <th class="num">W</th>
               <th class="num">L</th>
-              <th class="num">Set%</th>
-              <th class="num">Game%</th>
+              <th class="num"><span class="th-full">Set%</span><span class="th-short">S%</span></th>
+              <th class="num"><span class="th-full">Game%</span><span class="th-short">G%</span></th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>

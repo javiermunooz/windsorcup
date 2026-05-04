@@ -30,12 +30,12 @@ function buildScoreModal() {
     <div class="modal-overlay hidden" id="score-modal">
       <div class="modal score-modal">
 
-        <div id="modal-gate" class="score-modal__body" style="text-align:center;padding:2rem 1.5rem">
+        <div id="modal-gate" class="score-modal__gate">
           <div style="color:var(--color-text-secondary);margin-bottom:1rem">${lockSvg()}</div>
           <p class="text-secondary mb-1" style="font-size:0.85rem">Enter the match passphrase to submit results.</p>
-          <div class="flex gap-1" style="max-width:280px;margin:0 auto">
-            <input type="password" class="form-input" id="modal-passphrase" placeholder="Passphrase" style="flex:1">
-            <button class="btn btn--primary" id="modal-unlock">Unlock</button>
+          <div class="score-modal__gate-form">
+            <input type="password" class="form-input" id="modal-passphrase" placeholder="Passphrase">
+            <button class="btn btn--primary w-full" id="modal-unlock">Unlock</button>
           </div>
         </div>
 
