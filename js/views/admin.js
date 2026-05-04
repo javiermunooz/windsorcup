@@ -273,7 +273,6 @@ async function handleCreateSeason(e) {
     config.active_season = seasonId;
     await saveConfigData(config, apiKey);
 
-    invalidateCache();
     showToast(`Season "${name}" created!`);
     forceRefresh();
   } catch (err) {
@@ -296,7 +295,6 @@ async function handleCloseSeason(seasonId) {
     config.active_season = null;
     await saveConfigData(config, apiKey);
 
-    invalidateCache();
     showToast("Season closed.");
     forceRefresh();
   } catch (err) {

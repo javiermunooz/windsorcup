@@ -115,6 +115,13 @@ async function loadGist(forceRefresh = false) {
   return cachedGist;
 }
 
+async function refreshGist(token) {
+  cachedGist = await fetchGist(token);
+  writeLocalCache(CACHE_KEY_GIST, cachedGist);
+  cachedConfigData = null;
+  cachedSeasonData = null;
+}
+
 async function loadConfig(forceRefresh = false) {
   if (cachedConfigData && !forceRefresh) return cachedConfigData;
   const gist = await loadGist(forceRefresh);
@@ -149,22 +156,22 @@ async function saveSeasonData(data, token) {
   if (!activeSeason) throw new Error("No active season found.");
 
   const files = { [seasonFileName(activeSeason.id)]: { content: JSON.stringify(data, null, 2) } };
-  cachedGist = await updateGistFiles(files, token);
-  writeLocalCache(CACHE_KEY_GIST, cachedGist);
+  await updateGistFiles(files, token);
+  await refreshGist(token);
   cachedSeasonData = data;
 }
 
 async function saveConfigData(data, token) {
   const files = { [CONFIG_FILE]: { content: JSON.stringify(data, null, 2) } };
-  cachedGist = await updateGistFiles(files, token);
-  writeLocalCache(CACHE_KEY_GIST, cachedGist);
+  await updateGistFiles(files, token);
+  await refreshGist(token);
   cachedConfigData = data;
 }
 
 async function createSeasonFile(seasonId, data, token) {
   const files = { [seasonFileName(seasonId)]: { content: JSON.stringify(data, null, 2) } };
-  cachedGist = await updateGistFiles(files, token);
-  writeLocalCache(CACHE_KEY_GIST, cachedGist);
+  await updateGistFiles(files, token);
+  await refreshGist(token);
 }
 
 export {
