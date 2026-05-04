@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Windsor Cup</title>
+  <meta name="description" content="Windsor Cup — Tennis Round-Robin League">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="header">
+    <nav class="nav">
+      <a href="#standings" class="nav__logo" aria-label="Windsor Cup Home">
+        <img src="assets/logo.svg" alt="" class="nav__logo-icon" width="32" height="32">
+        <span class="nav__logo-text">Windsor Cup</span>
+      </a>
+      <ul class="nav__links" role="tablist">
+        <li><a href="#standings" class="nav__link" role="tab" data-view="standings">Standings</a></li>
+        <li><a href="#schedule" class="nav__link" role="tab" data-view="schedule">Schedule</a></li>
+        <li><a href="#h2h" class="nav__link" role="tab" data-view="h2h">H2H</a></li>
+        <li><a href="#admin" class="nav__link" role="tab" data-view="admin">Admin</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="main" id="app"></main>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
