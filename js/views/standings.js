@@ -14,6 +14,19 @@ function pctDisplay(val) {
   return val === 0 ? "—" : (val * 100).toFixed(1) + "%";
 }
 
+const DEADLINE = new Date("2026-07-01T00:00:00");
+const BANNER_THRESHOLD_DAYS = 15;
+
+function deadlineBanner(allMatchesPlayed) {
+  if (allMatchesPlayed) return "";
+  const now = new Date();
+  const diff = DEADLINE - now;
+  if (diff <= 0) return `<div class="deadline-banner deadline-banner--expired">Deadline has passed! All matches should be completed.</div>`;
+  const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  if (daysLeft > BANNER_THRESHOLD_DAYS) return "";
+  return `<div class="deadline-banner">${daysLeft} day${daysLeft !== 1 ? "s" : ""} left to complete all matches</div>`;
+}
+
 async function render() {
   let data;
   try { data = await loadSeason(); } catch { return noSeasonHtml(); }
@@ -36,7 +49,10 @@ async function render() {
     )
     .join("");
 
+  const allPlayed = playedMatches >= totalMatches;
+
   return `
+    ${deadlineBanner(allPlayed)}
     <div class="flex justify-between items-center mb-2">
       <h1>Standings</h1>
       <span class="text-secondary" style="font-size:0.85rem">${playedMatches} of ${totalMatches} matches played</span>

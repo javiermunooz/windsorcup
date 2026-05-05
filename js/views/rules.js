@@ -10,6 +10,7 @@ async function render() {
           <li>Round-robin: everyone plays everyone once</li>
           <li>Best of 3 sets</li>
           <li>Third set is a <strong class="text-primary">10-point super tiebreak</strong> (first to 10, win by 2)</li>
+          <li>All matches must be completed by <strong>1 July 2026</strong></li>
         </ul>
       </div>
 
