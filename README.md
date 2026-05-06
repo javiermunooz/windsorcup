@@ -20,7 +20,7 @@ Tennis round-robin league tracker. Static site hosted on GitHub Pages with a Git
 
 ```json
 {
-  "league": { "name": "Windsor Cup", "format": "best_of_3" },
+  "league": { "name": "Windsor Cup" },
   "seasons": [],
   "active_season": null
 }
@@ -48,7 +48,8 @@ Push to a GitHub repo and enable GitHub Pages from the repository settings (depl
 
 1. Go to the Admin tab and enter your admin passphrase
 2. Create a new season with player names and country codes (e.g. `Javier, ES`)
-3. The schedule is auto-generated using the round-robin circle method
+3. Choose the number of rounds (1 or 2) and match format (best of 1, 3, or 5 sets)
+4. The schedule is auto-generated using the round-robin circle method
 
 ## Tech Stack
 

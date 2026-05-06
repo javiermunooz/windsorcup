@@ -43,7 +43,7 @@ function computeStats(players, matches) {
     if (!m.walkover && m.score) {
       for (let i = 0; i < m.score.length; i++) {
         const [g1, g2] = m.score[i];
-        const isTiebreak = i === 2 && m.score.length === 3;
+        const isTiebreak = Math.max(g1, g2) > 7;
 
         if (!isTiebreak) {
           s1.gamesWon += g1;

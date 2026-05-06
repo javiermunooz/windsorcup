@@ -3,18 +3,22 @@
 import { loadSeason } from "../api.js";
 import { countryFlag, noSeasonHtml } from "../utils.js";
 
-function findMatch(matches, p1, p2) {
-  return matches.find(
+function findMatches(matches, p1, p2) {
+  return matches.filter(
     (m) =>
       (m.player1 === p1 && m.player2 === p2) ||
       (m.player1 === p2 && m.player2 === p1)
   );
 }
 
-function cellContent(match, rowPlayerId) {
-  if (!match) return `<span class="text-secondary">—</span>`;
-  const won = match.winner === rowPlayerId;
-  return `<span class="${won ? "text-success" : "text-danger"}" style="font-weight:700">${won ? "W" : "L"}</span>`;
+function cellContent(matchList, rowPlayerId) {
+  if (matchList.length === 0) return `<span class="text-secondary">—</span>`;
+  return matchList
+    .map((m) => {
+      const won = m.winner === rowPlayerId;
+      return `<span class="${won ? "text-success" : "text-danger"}" style="font-weight:700">${won ? "W" : "L"}</span>`;
+    })
+    .join(" ");
 }
 
 async function render() {
@@ -33,8 +37,8 @@ async function render() {
           if (rowP.id === colP.id) {
             return `<td class="matrix__self"></td>`;
           }
-          const match = findMatch(matches, rowP.id, colP.id);
-          return `<td>${cellContent(match, rowP.id)}</td>`;
+          const matchList = findMatches(matches, rowP.id, colP.id);
+          return `<td>${cellContent(matchList, rowP.id)}</td>`;
         })
         .join("");
 

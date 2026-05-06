@@ -55,35 +55,38 @@ function playerNameWithFlag(players, id) {
   return flag ? `${flag} ${name}` : name;
 }
 
-function generateRoundRobin(playerIds) {
+function generateRoundRobin(playerIds, rounds = 1) {
   const ids = [...playerIds];
   if (ids.length % 2 !== 0) ids.push(null);
 
   const n = ids.length;
-  const rounds = [];
+  const schedule = [];
   let matchCounter = 0;
 
-  for (let round = 0; round < n - 1; round++) {
-    const pairings = [];
-    for (let i = 0; i < n / 2; i++) {
-      const p1 = ids[i];
-      const p2 = ids[n - 1 - i];
-      if (p1 !== null && p2 !== null) {
-        matchCounter++;
-        pairings.push({
-          match_id: `m${matchCounter}`,
-          player1: p1,
-          player2: p2,
-        });
+  for (let pass = 0; pass < rounds; pass++) {
+    const rotatable = [...ids];
+    for (let round = 0; round < n - 1; round++) {
+      const pairings = [];
+      for (let i = 0; i < n / 2; i++) {
+        const a = rotatable[i];
+        const b = rotatable[n - 1 - i];
+        if (a !== null && b !== null) {
+          matchCounter++;
+          pairings.push({
+            match_id: `m${matchCounter}`,
+            player1: pass === 0 ? a : b,
+            player2: pass === 0 ? b : a,
+          });
+        }
       }
-    }
-    rounds.push({ round: round + 1, pairings });
+      schedule.push({ round: pass * (n - 1) + round + 1, pairings });
 
-    const last = ids.pop();
-    ids.splice(1, 0, last);
+      const last = rotatable.pop();
+      rotatable.splice(1, 0, last);
+    }
   }
 
-  return rounds;
+  return schedule;
 }
 
 function chevronSvg() {

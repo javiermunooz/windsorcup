@@ -24,8 +24,34 @@ let activeP1 = null;
 let activeP2 = null;
 let activeP1Name = null;
 let activeP2Name = null;
+let activeBestOf = 3;
 
-function buildScoreModal() {
+function buildSetInputHtml(setIndex, label, max, hidden) {
+  return `
+    <div ${hidden ? 'class="hidden" ' : ""}id="modal-set${setIndex}">
+      <div class="score-modal__set-label">${label}</div>
+      <div class="score-modal__set">
+        <div class="score-modal__cell">
+          <input type="number" class="score-input" data-set="${setIndex}" data-player="1" min="0" max="${max}" inputmode="numeric">
+        </div>
+        <span class="score-modal__dash">–</span>
+        <div class="score-modal__cell">
+          <input type="number" class="score-input" data-set="${setIndex}" data-player="2" min="0" max="${max}" inputmode="numeric">
+        </div>
+      </div>
+    </div>`;
+}
+
+function buildScoreModal(bestOf) {
+  const regularSets = bestOf === 1 ? 1 : bestOf - 1;
+  let setsHtml = "";
+  for (let i = 0; i < regularSets; i++) {
+    setsHtml += buildSetInputHtml(i, `Set ${i + 1}`, 7, false);
+  }
+  if (bestOf > 1) {
+    setsHtml += buildSetInputHtml(regularSets, "Match Tiebreak", 99, true);
+  }
+
   return `
     <div class="modal-overlay hidden" id="score-modal">
       <div class="modal score-modal">
@@ -48,40 +74,7 @@ function buildScoreModal() {
 
           <div class="score-modal__body">
             <div id="modal-score-section">
-              <div class="score-modal__set-label">Set 1</div>
-              <div class="score-modal__set">
-                <div class="score-modal__cell">
-                  <input type="number" class="score-input" data-set="0" data-player="1" min="0" max="7" inputmode="numeric">
-                </div>
-                <span class="score-modal__dash">–</span>
-                <div class="score-modal__cell">
-                  <input type="number" class="score-input" data-set="0" data-player="2" min="0" max="7" inputmode="numeric">
-                </div>
-              </div>
-
-              <div class="score-modal__set-label">Set 2</div>
-              <div class="score-modal__set">
-                <div class="score-modal__cell">
-                  <input type="number" class="score-input" data-set="1" data-player="1" min="0" max="7" inputmode="numeric">
-                </div>
-                <span class="score-modal__dash">–</span>
-                <div class="score-modal__cell">
-                  <input type="number" class="score-input" data-set="1" data-player="2" min="0" max="7" inputmode="numeric">
-                </div>
-              </div>
-
-              <div class="hidden" id="modal-set3">
-                <div class="score-modal__set-label">Match Tiebreak</div>
-                <div class="score-modal__set">
-                  <div class="score-modal__cell">
-                    <input type="number" class="score-input" data-set="2" data-player="1" min="0" max="99" inputmode="numeric">
-                  </div>
-                  <span class="score-modal__dash">–</span>
-                  <div class="score-modal__cell">
-                    <input type="number" class="score-input" data-set="2" data-player="2" min="0" max="99" inputmode="numeric">
-                  </div>
-                </div>
-              </div>
+              ${setsHtml}
             </div>
 
             <div id="modal-walkover-section" class="hidden" style="text-align:center;padding:1rem 0">
@@ -124,22 +117,27 @@ function validateTiebreak(g1, g2) {
   return null;
 }
 
-function validateScore(score) {
-  for (let i = 0; i < Math.min(score.length, 2); i++) {
+function validateScore(score, bestOf) {
+  const regularSets = bestOf === 1 ? 1 : bestOf - 1;
+  const hasTiebreak = bestOf > 1 && score.length === bestOf;
+
+  for (let i = 0; i < Math.min(score.length, regularSets); i++) {
     const err = validateSet(score[i][0], score[i][1]);
     if (err) return `Set ${i + 1}: ${err}`;
   }
 
-  if (score.length === 3) {
-    const err = validateTiebreak(score[2][0], score[2][1]);
+  if (hasTiebreak) {
+    const tbIdx = bestOf - 1;
+    const err = validateTiebreak(score[tbIdx][0], score[tbIdx][1]);
     if (err) return err;
 
     let s1 = 0, s2 = 0;
-    for (let i = 0; i < 2; i++) {
+    const setsToWin = Math.ceil(bestOf / 2);
+    for (let i = 0; i < tbIdx; i++) {
       if (score[i][0] > score[i][1]) s1++;
       else s2++;
     }
-    if (s1 === 2 || s2 === 2) return "Tiebreak should only be played if sets are 1-1.";
+    if (s1 >= setsToWin || s2 >= setsToWin) return "Tiebreak should only be played if sets are split evenly.";
   }
 
   const winner = determineWinner(score);
@@ -161,6 +159,7 @@ function determineWinner(score) {
 async function render() {
   let data;
   try { data = await loadSeason(); } catch { return noSeasonHtml(); }
+  activeBestOf = data.season?.sets || 3;
   const currentRound = getCurrentRound(data.schedule, data.matches);
   const totalMatches = data.schedule.reduce((sum, r) => sum + r.pairings.length, 0);
   const playedMatches = data.matches.length;
@@ -216,7 +215,7 @@ async function render() {
       <span class="text-secondary" style="font-size:0.85rem">${playedMatches} of ${totalMatches} matches played</span>
     </div>
     ${rounds}
-    ${buildScoreModal()}`;
+    ${buildScoreModal(activeBestOf)}`;
 }
 
 function openModal(matchId, p1Id, p2Id, players) {
@@ -263,7 +262,9 @@ function resetModalForm() {
   document.getElementById("modal-walkover").checked = false;
   document.getElementById("modal-walkover-section").classList.add("hidden");
   document.getElementById("modal-score-section").classList.remove("hidden");
-  document.getElementById("modal-set3").classList.add("hidden");
+  if (activeBestOf > 1) {
+    document.getElementById(`modal-set${activeBestOf - 1}`).classList.add("hidden");
+  }
   document.getElementById("modal-submit").disabled = false;
   document.getElementById("modal-submit").textContent = "Submit";
 }
@@ -274,11 +275,20 @@ function getInputVal(set, player) {
   ) || 0;
 }
 
-function updateSet3Visibility() {
-  const s1w = getInputVal(0, 1) > getInputVal(0, 2) ? 1 : getInputVal(0, 2) > getInputVal(0, 1) ? 2 : 0;
-  const s2w = getInputVal(1, 1) > getInputVal(1, 2) ? 1 : getInputVal(1, 2) > getInputVal(1, 1) ? 2 : 0;
-  const needs3 = s1w !== 0 && s2w !== 0 && s1w !== s2w;
-  document.getElementById("modal-set3").classList.toggle("hidden", !needs3);
+function updateTiebreakVisibility() {
+  if (activeBestOf === 1) return;
+  const regularSets = activeBestOf - 1;
+  const setsToWin = Math.ceil(activeBestOf / 2);
+  let s1 = 0, s2 = 0;
+  for (let i = 0; i < regularSets; i++) {
+    const v1 = getInputVal(i, 1);
+    const v2 = getInputVal(i, 2);
+    if (v1 > v2) s1++;
+    else if (v2 > v1) s2++;
+  }
+  const allRegularPlayed = (s1 + s2) === regularSets;
+  const needsTiebreak = allRegularPlayed && s1 < setsToWin && s2 < setsToWin;
+  document.getElementById(`modal-set${regularSets}`).classList.toggle("hidden", !needsTiebreak);
 }
 
 function updateWinnerHighlights() {
@@ -294,11 +304,15 @@ function updateWinnerHighlights() {
 
 function parseModalScore() {
   const sets = [];
-  const has3 = !document.getElementById("modal-set3").classList.contains("hidden");
-  const count = has3 ? 3 : 2;
-
-  for (let i = 0; i < count; i++) {
+  const regularSets = activeBestOf === 1 ? 1 : activeBestOf - 1;
+  for (let i = 0; i < regularSets; i++) {
     sets.push([getInputVal(i, 1), getInputVal(i, 2)]);
+  }
+  if (activeBestOf > 1) {
+    const tbEl = document.getElementById(`modal-set${regularSets}`);
+    if (tbEl && !tbEl.classList.contains("hidden")) {
+      sets.push([getInputVal(regularSets, 1), getInputVal(regularSets, 2)]);
+    }
   }
   return sets;
 }
@@ -346,7 +360,7 @@ function bindEvents() {
 
   document.querySelectorAll("#modal-form .score-input").forEach((input) => {
     input.addEventListener("input", () => {
-      updateSet3Visibility();
+      updateTiebreakVisibility();
       updateWinnerHighlights();
     });
   });
@@ -368,7 +382,7 @@ function bindEvents() {
       };
     } else {
       const score = parseModalScore();
-      const error = validateScore(score);
+      const error = validateScore(score, activeBestOf);
       if (error) {
         showToast(error, "error");
         return;

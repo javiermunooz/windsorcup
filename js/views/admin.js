@@ -101,6 +101,23 @@ function renderSeasonsTab(config) {
         <label class="form-label" for="season-players">Players (one per line: Name, Country Code)</label>
         <textarea class="form-input" id="season-players" rows="6" placeholder="Javier, ES&#10;John, GB&#10;Pierre, FR&#10;..." required style="resize:vertical"></textarea>
       </div>
+      <div class="flex gap-1">
+        <div class="form-group" style="flex:1">
+          <label class="form-label" for="season-rounds">Rounds</label>
+          <select class="form-input" id="season-rounds">
+            <option value="1">1 (play each opponent once)</option>
+            <option value="2">2 (play each opponent twice)</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1">
+          <label class="form-label" for="season-sets">Match Format</label>
+          <select class="form-input" id="season-sets">
+            <option value="1">Best of 1</option>
+            <option value="3" selected>Best of 3</option>
+            <option value="5">Best of 5</option>
+          </select>
+        </div>
+      </div>
       <button type="submit" class="btn btn--primary mt-1">Create Season</button>
     </form>`;
 }
@@ -249,7 +266,9 @@ async function handleCreateSeason(e) {
     return { id: `p${i + 1}`, name: pName, country };
   });
 
-  const schedule = generateRoundRobin(players.map((p) => p.id));
+  const rounds = parseInt(document.getElementById("season-rounds").value) || 1;
+  const sets = parseInt(document.getElementById("season-sets").value) || 3;
+  const schedule = generateRoundRobin(players.map((p) => p.id), rounds);
   const seasonId = `${new Date().getFullYear()}-S${Date.now().toString(36)}`;
 
   const seasonData = {
@@ -258,6 +277,8 @@ async function handleCreateSeason(e) {
       name,
       start_date: new Date().toISOString().slice(0, 10),
       status: "in_progress",
+      rounds,
+      sets,
     },
     players,
     schedule,
@@ -322,7 +343,7 @@ async function handleAddPlayer(e) {
       0
     );
     data.players.push({ id: `p${maxId + 1}`, name, country });
-    data.schedule = generateRoundRobin(data.players.map((p) => p.id));
+    data.schedule = generateRoundRobin(data.players.map((p) => p.id), data.season?.rounds || 1);
 
     await saveSeasonData(data, apiKey);
     showToast(`Added ${name}.`);
@@ -346,7 +367,7 @@ async function handleRemovePlayer(playerId) {
     if (!confirm(`Remove ${player?.name ?? playerId}?`)) return;
 
     data.players = data.players.filter((p) => p.id !== playerId);
-    data.schedule = generateRoundRobin(data.players.map((p) => p.id));
+    data.schedule = generateRoundRobin(data.players.map((p) => p.id), data.season?.rounds || 1);
 
     await saveSeasonData(data, apiKey);
     showToast("Player removed.");
